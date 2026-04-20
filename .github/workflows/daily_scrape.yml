@@ -1,0 +1,32 @@
+name: Daily Wuzzuf Automation
+
+on:
+  schedule:
+    - cron: '0 8 * * *' 
+  workflow_dispatch: 
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Libraries
+        run: |
+          pip install requests beautifulsoup4 pandas openpyxl
+
+      - name: Run Scraper Engine
+        run: python scraper.py
+
+      - name: Save Changes to GitHub
+        run: |
+          git config --global user.name 'GitHub Automation'
+          git config --global user.email 'actions@github.com'
+          git add wuzzuf_data.db jobs_to_track.txt
+          git commit -m "Automated update: $(date)" || echo "No changes to commit"
+          git push
